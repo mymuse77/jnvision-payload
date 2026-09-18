@@ -3,33 +3,28 @@ import path from 'node:path'
 
 const project = process.cwd()
 const openNext = path.join(project, '.open-next')
+const sitesWorker = path.join(project, '.sites-worker')
 const dist = path.join(project, 'dist')
 const server = path.join(dist, 'server')
 const client = path.join(dist, 'client')
 const metadata = path.join(dist, '.openai')
 const drizzle = path.join(project, 'drizzle')
 
-if (!fs.existsSync(path.join(openNext, 'worker.js'))) {
+if (!fs.existsSync(path.join(sitesWorker, 'worker.js'))) {
   throw new Error('Run pnpm build:worker before staging the Sites package.')
 }
 
 fs.rmSync(dist, { recursive: true, force: true })
 fs.mkdirSync(server, { recursive: true })
-fs.cpSync(openNext, server, {
-  recursive: true,
-  dereference: false,
-  filter: (source) => {
-    const resolved = path.resolve(source)
-    return (
-      resolved !== path.resolve(path.join(openNext, 'assets')) &&
-      !resolved.startsWith(
-        `${path.resolve(path.join(openNext, 'server-functions', 'default', 'node_modules'))}${path.sep}`,
-      ) &&
-      resolved !== path.resolve(path.join(openNext, 'server-functions', 'default', 'node_modules'))
-    )
-  },
-})
-fs.copyFileSync(path.join(server, 'worker.js'), path.join(server, 'index.js'))
+fs.copyFileSync(path.join(sitesWorker, 'worker.js'), path.join(server, 'index.js'))
+for (const entry of fs.readdirSync(sitesWorker, { withFileTypes: true })) {
+  if (
+    entry.isFile() &&
+    !['worker.js', 'worker.js.map', 'README.md'].includes(entry.name)
+  ) {
+    fs.copyFileSync(path.join(sitesWorker, entry.name), path.join(server, entry.name))
+  }
+}
 fs.cpSync(path.join(openNext, 'assets'), client, { recursive: true, dereference: true })
 
 fs.mkdirSync(metadata, { recursive: true })

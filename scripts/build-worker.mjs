@@ -4,6 +4,7 @@ import path from 'node:path'
 
 const project = process.cwd()
 const pnpmRoot = path.join(project, 'node_modules', '.pnpm')
+const sitesWorker = path.join(project, '.sites-worker')
 
 const workerAssets = [
   { filename: 'yoga.wasm', sourceSuffix: '?module', outputSuffix: '' },
@@ -115,6 +116,13 @@ try {
   process.env.SITES_REUSE_NEXT_BUILD = '1'
   run('pnpm exec opennextjs-cloudflare build')
   makeWorkerBundlePortable()
+
+  fs.rmSync(sitesWorker, { recursive: true, force: true })
+  process.env.CI = '1'
+  run('pnpm exec wrangler deploy --dry-run --outdir .sites-worker')
+  if (!fs.existsSync(path.join(sitesWorker, 'worker.js'))) {
+    throw new Error('Wrangler did not emit the final Sites Worker bundle.')
+  }
 } finally {
   fs.writeFileSync(sharpBinding, originalSharp)
   fs.writeFileSync(copyTracedFiles, originalCopyTracedFiles)

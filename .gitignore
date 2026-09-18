@@ -52,4 +52,5 @@ node_modules/
 
 # OpenNext
 .open-next
+.sites-worker
 .wrangler
