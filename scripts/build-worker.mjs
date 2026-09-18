@@ -6,9 +6,9 @@ const project = process.cwd()
 const pnpmRoot = path.join(project, 'node_modules', '.pnpm')
 
 const workerAssets = [
-  { filename: 'yoga.wasm', importSuffix: '?module' },
-  { filename: 'resvg.wasm', importSuffix: '?module' },
-  { filename: 'Geist-Regular.ttf.bin', importSuffix: '' },
+  { filename: 'yoga.wasm', sourceSuffix: '?module', outputSuffix: '' },
+  { filename: 'resvg.wasm', sourceSuffix: '?module', outputSuffix: '' },
+  { filename: 'Geist-Regular.ttf.bin', sourceSuffix: '', outputSuffix: '' },
 ]
 
 function run(command) {
@@ -51,15 +51,15 @@ function makeWorkerBundlePortable() {
   )
   let handler = fs.readFileSync(handlerPath, 'utf8')
 
-  for (const { filename, importSuffix } of workerAssets) {
+  for (const { filename, sourceSuffix, outputSuffix } of workerAssets) {
     const absoluteImport = new RegExp(
-      `(["'])[A-Za-z]:/[^"'\\r\\n]*?/next/dist/compiled/@vercel/og/${escapeRegExp(filename)}${escapeRegExp(importSuffix)}\\1`,
+      `(["'])[A-Za-z]:/[^"'\\r\\n]*?/next/dist/compiled/@vercel/og/${escapeRegExp(filename)}${escapeRegExp(sourceSuffix)}\\1`,
       'g',
     )
     let replacements = 0
     handler = handler.replace(absoluteImport, (_match, quote) => {
       replacements += 1
-      return `${quote}./${filename}${importSuffix}${quote}`
+      return `${quote}./${filename}${outputSuffix}${quote}`
     })
     if (replacements === 0) {
       throw new Error(`OpenNext did not emit the expected ${filename} import.`)
