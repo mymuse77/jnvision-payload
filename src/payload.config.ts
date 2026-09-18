@@ -3,6 +3,7 @@ import path from 'path'
 import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
+import { zh } from 'payload/i18n/zh'
 import { fileURLToPath } from 'url'
 import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
@@ -52,12 +53,19 @@ const cloudflare =
 export default buildConfig({
   admin: {
     user: Users.slug,
+    meta: {
+      titleSuffix: '｜捷诺视讯管理后台',
+    },
     importMap: {
       baseDir: path.resolve(dirname),
     },
   },
   collections: [Users, Media, Solutions, Products, Insights, Inquiries],
   globals: [SiteSettings],
+  i18n: {
+    fallbackLanguage: 'zh',
+    supportedLanguages: { zh },
+  },
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
