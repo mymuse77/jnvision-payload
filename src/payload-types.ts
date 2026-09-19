@@ -221,7 +221,10 @@ export interface Insight {
   topic: string;
   publishedAt: string;
   excerpt: string;
-  body: {
+  /**
+   * 可选；未填写时详情页会展示内容摘要。
+   */
+  body?: {
     root: {
       type: string;
       children: {
@@ -235,7 +238,7 @@ export interface Insight {
       version: number;
     };
     [k: string]: unknown;
-  };
+  } | null;
   featured?: boolean | null;
   updatedAt: string;
   createdAt: string;

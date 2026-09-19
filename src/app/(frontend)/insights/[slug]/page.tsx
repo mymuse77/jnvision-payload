@@ -97,7 +97,7 @@ export default async function InsightDetailPage({ params }: PageProps) {
           </aside>
           <div className="article-body">
             {article.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-            {article.richText && <RichText data={article.richText} />}
+            {article.richText ? <RichText data={article.richText} /> : !article.paragraphs?.length && <p>{article.excerpt}</p>}
           </div>
         </article>
 

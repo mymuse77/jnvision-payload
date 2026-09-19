@@ -12,7 +12,13 @@ export const Insights: CollectionConfig = {
     { name: 'topic', label: '栏目', type: 'text', required: true },
     { name: 'publishedAt', label: '发布时间', type: 'date', required: true, admin: { date: { pickerAppearance: 'dayAndTime' } } },
     { name: 'excerpt', label: '内容摘要', type: 'textarea', required: true },
-    { name: 'body', label: '正文', type: 'richText', required: true },
+    {
+      name: 'body',
+      label: '正文',
+      type: 'richText',
+      required: false,
+      admin: { description: '可选；未填写时详情页会展示内容摘要。' },
+    },
     { name: 'featured', label: '首页推荐', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
   ],
 }
