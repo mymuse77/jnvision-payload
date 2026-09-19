@@ -1,13 +1,13 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import { fallbackInsights, formatInsightDate, type InsightCard } from '@/lib/insights'
 import { ContactForm } from './ContactForm'
-import './styles.css'
 
 type SolutionCard = { eyebrow: string; title: string; summary: string; highlights: string[] }
 type ProductCard = { englishTitle: string; title: string; category: string; summary: string; capabilities: string[] }
-type InsightCard = { topic: string; date: string; title: string; excerpt: string }
 
 const fallbackSolutions: SolutionCard[] = [
   {
@@ -39,14 +39,6 @@ const fallbackProducts: ProductCard[] = [
   { englishTitle: 'AI Intelligent Assistant', title: 'AI智能体 / 数字人', category: '行业大模型', summary: '构建具备行业知识、场景感知与自然交互能力的数字助手，服务安全监管、公共预警和指挥决策。', capabilities: ['知识问答', '智能研判', '数字化交互'] },
 ]
 
-const fallbackInsights: InsightCard[] = [
-  { topic: '空间智能', date: '2026.01.16', title: '从点云到真境：3DGS如何重塑三维实景融合的“视网膜”', excerpt: '以自适应高斯分布提升复杂场景的高保真重建和实时渲染，并支撑语义分割、几何测量与变化分析。' },
-  { topic: '智能制造', date: '2026.01.19', title: 'AI技术赋能智能制造', excerpt: '聚焦研发、生产、供应链和服务全价值链，走向自主决策、绿色制造和全球协同。' },
-  { topic: '工业视频', date: '2022.06.30', title: '集团统建工业视频“一张网”', excerpt: '统一工业视频接口标准，汇聚集团视频资源池，建立标准化、智能化、可扩展的视频服务能力。' },
-  { topic: '油气能源', date: '2022.06.30', title: '智能安防一体化监测预警系统', excerpt: '融合存量安防、AI告警和信创环境，构建“安全态势一张图”的统一监测与预警体系。' },
-  { topic: '数字站场', date: '2022.06.30', title: '视频数字孪生的三维智慧站场融合平台', excerpt: '把视频、周界、门禁、消防、人员定位与 SCADA 等系统汇聚到统一数字化底座。' },
-]
-
 async function loadManagedContent() {
   try {
     const payload = await getPayload({ config })
@@ -64,7 +56,7 @@ async function loadManagedContent() {
       ? productsResult.value.docs.map((item) => ({ englishTitle: item.englishTitle || item.category, title: item.title, category: item.category, summary: item.summary, capabilities: item.capabilities?.map((x) => x.text) || [] }))
       : fallbackProducts
     const insights = insightsResult.status === 'fulfilled' && insightsResult.value.docs.length
-      ? insightsResult.value.docs.map((item) => ({ topic: item.topic, date: new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(item.publishedAt)).replaceAll('/', '.'), title: item.title, excerpt: item.excerpt }))
+      ? insightsResult.value.docs.map((item): InsightCard => ({ slug: String(item.id), topic: item.topic, date: formatInsightDate(item.publishedAt), title: item.title, excerpt: item.excerpt, body: [] }))
       : fallbackInsights
     const settings = settingsResult.status === 'fulfilled' ? settingsResult.value : null
 
@@ -96,6 +88,9 @@ export default async function HomePage() {
         <section className="hero" aria-labelledby="hero-title">
           <Image className="hero-image" src="/hero-city.jpg" alt="数字化城市与全域互联网络" fill sizes="100vw" priority />
           <div className="hero-grid" aria-hidden="true" />
+          <div className="hero-scan" aria-hidden="true" />
+          <div className="hero-orbit hero-orbit-a" aria-hidden="true"><span /></div>
+          <div className="hero-orbit hero-orbit-b" aria-hidden="true"><span /></div>
           <div className="hero-content">
             <p className="eyebrow"><span>JN / VISION</span> 1997—2026</p>
             <h1 id="hero-title">让每一个复杂场景<br />都拥有清晰的数字视野</h1>
@@ -103,7 +98,7 @@ export default async function HomePage() {
             <div className="hero-actions"><a className="button button-primary" href="#business">探索业务领域</a><a className="button button-ghost" href="#products">查看产品能力 <span>↗</span></a></div>
           </div>
           <aside className="hero-status" aria-label="核心能力概览">
-            <div className="status-top"><span className="pulse" /> 全栈自主技术能力</div><div className="status-meter"><span /></div>
+            <div className="status-top"><span className="pulse" /> 全栈自主技术能力 <em>LIVE</em></div><div className="status-meter"><span /></div>
             <div className="status-list"><p><strong>100+</strong><span>知识产权</span></p><p><strong>2,000+</strong><span>成功案例</span></p><p><strong>1,000,000+</strong><span>项目规模</span></p></div>
           </aside>
         </section>
@@ -167,7 +162,7 @@ export default async function HomePage() {
         <section className="section insights-section" id="insights">
           <div className="section-heading split"><div><div className="section-kicker"><span>05</span> INSIGHTS & CASES</div><h2>来自一线场景的<br />技术实践。</h2></div><p>从30万路工业视频资源汇聚，到海上油田智能安防与3DGS空间重建，持续沉淀可复用的方法和产品能力。</p></div>
           <div className="insight-list">
-            {insights.map((item, index) => <article key={item.title}><span className="insight-no">{String(index + 1).padStart(2, '0')}</span><div><p>{item.topic} · {item.date}</p><h3>{item.title}</h3><span>{item.excerpt}</span></div><i>↗</i></article>)}
+            {insights.map((item, index) => <Link className="insight-item" href={`/insights/${item.slug}`} key={item.title}><span className="insight-no">{String(index + 1).padStart(2, '0')}</span><div><p>{item.topic} · {item.date}</p><h3>{item.title}</h3><span>{item.excerpt}</span></div><i aria-hidden="true">↗</i></Link>)}
           </div>
         </section>
 
@@ -184,7 +179,7 @@ export default async function HomePage() {
         </section>
       </main>
 
-      <footer><div className="footer-brand"><Image src="/jnvision-logo.png" alt="北京捷诺" width={176} height={55} /><p>场景化 · 数字化 · 智能化</p></div><div><a href="#business">业务领域</a><a href="#products">产品服务</a><a href="/admin">内容管理</a></div><p>© 北京捷诺视讯数码科技有限公司<br />{settings?.icp || '京ICP备14042411号-1'}</p></footer>
+      <footer><div className="footer-brand"><Image src="/jnvision-logo.png" alt="北京捷诺" width={176} height={55} /><p>场景化 · 数字化 · 智能化</p></div><div><a href="#business">业务领域</a><a href="#products">产品服务</a><Link href="/admin">内容管理</Link></div><p>© 北京捷诺视讯数码科技有限公司<br />{settings?.icp || '京ICP备14042411号-1'}</p></footer>
     </div>
   )
 }
